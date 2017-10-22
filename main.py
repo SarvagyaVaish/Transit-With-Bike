@@ -75,9 +75,14 @@ if __name__ == '__main__':
     #
 
     # Set initial node
-    first_node = Node.find_node_by_id("70201")
-    first_node.cost = 18 * 60 + 9
+    # first_node = Node.find_node_by_id("70201")
+    # first_node.cost = 18 * 60 + 9
+    # final_node_id = "70011"
+
+    first_node = Node.find_node_by_id("departure")
+    first_node.cost = 17 * 60
     final_node_id = "70011"
+
     # first_node = Node.find_node_by_id("A")  # TODO: For testing
     # first_node.cost = 1 * 60 + 1  # TODO: For testing
     # final_node_id = "C"  # TODO: For testing
@@ -92,13 +97,13 @@ if __name__ == '__main__':
             print "\n-----"
             raw_input()
 
-        # # Condense open set: keep only the first lowest cost node for each node id.
-        # new_set = {}
-        # for node in open_set:
-        #     if not node.id in new_set.keys() or new_set[node.id].cost > node.cost:
-        #         new_set[node.id] = node
-        #         continue
-        # open_set = new_set.values()
+        # Condense open set: keep only the first lowest cost node for each node id.
+        new_set = {}
+        for node in open_set:
+            if not node.id in new_set.keys() or new_set[node.id].cost > node.cost:
+                new_set[node.id] = node
+                continue
+        open_set = new_set.values()
 
         if DEBUG:
             print "\nOpen set:"
@@ -147,10 +152,10 @@ if __name__ == '__main__':
             # Set connections
             current_node.connections += possible_connections
 
-        # # Add connections for bikes
-        # if "bike" in current_node.modes:
-        #     bike_connections = create_bike_connections(current_node)
-        #     current_node.connections += bike_connections
+        # Add connections for bikes
+        if "bike" in current_node.modes:
+            bike_connections = create_bike_connections(current_node)
+            current_node.connections += bike_connections
 
         # if DEBUG:
         #     print "\nNew connections:"
