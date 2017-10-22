@@ -1,13 +1,12 @@
 import pprint
 import copy
-from math import sin, cos, sqrt, atan2, radians
 
-import caltrain
 from caltrain import CaltrainModel
 
-from util import create_csv_reader
+from util import create_csv_reader, create_bike_connections
 from util import Node, Connection
 
+DEBUG = False
 
 
 # stop_times_reader, f = create_csv_reader('stop_times.txt')
@@ -56,46 +55,6 @@ def add_stop_info(stop):
     return stop
 
 
-def dist_bw_nodes(node1, node2):
-    """
-    Calculate distance between two nodes.
-    :param node1:
-    :param node2:
-    :return: Distance in meters.
-    """
-    lat1 = radians(abs(node1.lat))
-    lon1 = radians(abs(node1.lon))
-    lat2 = radians(abs(node2.lat))
-    lon2 = radians(abs(node2.lon))
-
-    R = 6373.
-    dlon = abs(lon2 - lon1)
-    dlat = abs(lat2 - lat1)
-
-    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-    distance = R * c
-
-    return distance * 1000
-
-
-def get_close_nodes(node, all_nodes, dist_th=5000):
-    """
-    :param node: the node in question
-    :param all_nodes: list of all nodes to check against
-    :param dist_th: return all nodes closer than this threshold
-    :return: list of nodes
-    """
-    result_nodes = []
-    for n in all_nodes:
-        if n.id == node.id:  # ignore self
-            continue
-        if dist_bw_nodes(node, n) < dist_th:
-            result_nodes.append(n)
-
-    return result_nodes
-
-
 if __name__ == '__main__':
     service_id = 'CT-17OCT-Combo-Weekday-01'
 
@@ -125,11 +84,9 @@ if __name__ == '__main__':
     closed_set = []
 
     while len(open_set) > 0:
-        # print "\n"
-        # raw_input()
-
-        # print "Open set:"
-        # pprint.pprint(open_set)
+        if DEBUG:
+            print "\n-----"
+            raw_input()
 
         # Condense open set
         new_set = {}
@@ -139,10 +96,15 @@ if __name__ == '__main__':
                 continue
         open_set = new_set.values()
 
+        if DEBUG:
+            print "\nOpen set:"
+            pprint.pprint(open_set)
+
         # Get next node to explore
         current_node = Node.cheapest_node(open_set)
-        # print "Current node:"
-        # print current_node
+        if DEBUG:
+            print "\nCurrent node:"
+            print current_node
 
         open_set.remove(current_node)
         closed_set.append(current_node)
@@ -171,10 +133,14 @@ if __name__ == '__main__':
             # Set connections
             current_node.connections += possible_connections
 
-        # TODO: Add connections for bike
+        # Add connections for bikes
+        # if "bike" in current_node.modes:
+        #     bike_connections = create_bike_connections(current_node, all_nodes)
+        #     current_node.connections += bike_connections
 
-        # print "New connections:"
-        # pprint.pprint(current_node.connections)
+        if DEBUG:
+            print "\nNew connections:"
+            pprint.pprint(current_node.connections)
 
         # Iterate over connections and add nodes
         for connection in current_node.connections:
@@ -184,14 +150,13 @@ if __name__ == '__main__':
             # Add new node to open set
             open_set.append(new_node)
 
+        if DEBUG:
+            print "\nOpen set:"
+            pprint.pprint(open_set)
+
 
     # Print answer
     # pprint.pprint(closed_set)
-
-
-
-    # close_nodes = get_close_nodes(departure_node, all_nodes)
-    # pprint.pprint(close_nodes)
 
 
 

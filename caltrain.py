@@ -13,7 +13,7 @@ def read_nodes():
         node = Node(
             modes=["caltrain", "bike"],
             id=stop_row['stop_id'],
-            name=stop_row['stop_name'],
+            name=stop_row['stop_name'].replace(" Caltrain", "") + " " + stop_row['platform_code'],
             lat=float(stop_row['stop_lat']),
             lon=float(stop_row['stop_lon'])
         )
@@ -56,7 +56,7 @@ def read_connections(nodes):
             end_time = trip_sequence[i+1]['time']
 
             # append
-            connection = Connection(start_node, start_time, end_node, end_time)
+            connection = Connection(start_node, start_time, end_node, end_time, "caltrain")
             connections.append(connection)
 
     return connections
