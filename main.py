@@ -1,19 +1,12 @@
 import pprint
-import copy
 
 from caltrain import CaltrainModel
 
 from util import create_csv_reader, create_bike_connections
-from util import Node, Connection
+from util import Node, Connection, store_all_nodes_db, dist_bw_nodes
 
 DEBUG = False
-
-
-# stop_times_reader, f = create_csv_reader('stop_times.txt')
-# realtime_trips_reader, f = create_csv_reader('realtime_trips.txt')
-# calendar_reader, f = create_csv_reader('calendar.txt')
-# trips_reader, f = create_csv_reader('trips.txt')
-# stops_reader, f = create_csv_reader('stops.txt')
+# DEBUG = True
 
 
 def get_trips(service_id):
@@ -55,28 +48,37 @@ def add_stop_info(stop):
     return stop
 
 
+def setup_DB(all_nodes):
+    # Create global lookup
+    all_nodes_db = {}
+    for n in all_nodes:
+        all_nodes_db[n.id] = n
+    store_all_nodes_db(all_nodes_db)
+
+
 if __name__ == '__main__':
     service_id = 'CT-17OCT-Combo-Weekday-01'
 
     # Models
     caltrain = CaltrainModel()
-    # pprint.pprint(caltrain.nodes)
-    # pprint.pprint(caltrain.connections)
 
     # Create basic nodes
     departure_node = Node(modes=["bike"], id="departure", name="departure", lat=37.425822, lon=-122.100192)
     arrival_node = Node(modes=["bike"], id="arrival", name="arrival", lat=37.785399, lon=-122.398752)
-    all_nodes = caltrain.nodes + [departure_node] + [arrival_node]  # TODO: bart.nodes
+    setup_DB(caltrain.nodes + [departure_node] + [arrival_node])
+    # setup_DB(caltrain.nodes)  # TODO: For testing
 
     #
     # Graph search
     #
 
     # Set initial node
-    first_node = copy.deepcopy(Node.find_node("70201", all_nodes))
-    first_node.cost = 18 * 60 + 9  # Start time
-    # first_node = copy.deepcopy(Node.find_node("A", all_nodes))
-    # first_node.cost = 1 * 60 + 1  # Start time
+    first_node = Node.find_node_by_id("70201")
+    first_node.cost = 18 * 60 + 9
+    final_node_id = "70011"
+    # first_node = Node.find_node_by_id("A")  # TODO: For testing
+    # first_node.cost = 1 * 60 + 1  # TODO: For testing
+    # final_node_id = "C"  # TODO: For testing
 
     open_set = []
     open_set.append(first_node)
@@ -110,8 +112,8 @@ if __name__ == '__main__':
         closed_set.append(current_node)
 
         # Check for goal
-        if current_node.id == "70011":
-            print "Found one"
+        if current_node.id == final_node_id:
+            print "Solution: ", current_node
             continue
 
         # Add connections for caltrain
@@ -121,7 +123,7 @@ if __name__ == '__main__':
             # Find connections from current node
             relevant_connections = []
             for connection in all_connections:
-                if connection.start_node.id == current_node.id:
+                if connection.start_node_id == current_node.id:
                     relevant_connections.append(connection)
 
             # Find connections that are still possible
@@ -133,9 +135,9 @@ if __name__ == '__main__':
             # Set connections
             current_node.connections += possible_connections
 
-        # Add connections for bikes
+        # # Add connections for bikes
         # if "bike" in current_node.modes:
-        #     bike_connections = create_bike_connections(current_node, all_nodes)
+        #     bike_connections = create_bike_connections(current_node)
         #     current_node.connections += bike_connections
 
         if DEBUG:
@@ -144,7 +146,8 @@ if __name__ == '__main__':
 
         # Iterate over connections and add nodes
         for connection in current_node.connections:
-            new_node = copy.deepcopy(connection.end_node)
+            new_node_id = connection.end_node_id
+            new_node = Node.find_node_by_id(new_node_id)
             new_node.cost = connection.end_time
 
             # Add new node to open set

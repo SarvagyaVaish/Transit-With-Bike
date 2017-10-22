@@ -9,6 +9,7 @@ def read_nodes():
     """
     nodes = []
     stops_reader, f = util.create_csv_reader('stops.txt')
+    # stops_reader, f = util.create_csv_reader('test_stops.txt')  # TODO: For testing
     for stop_row in stops_reader:
         node = Node(
             modes=["caltrain", "bike"],
@@ -30,11 +31,12 @@ def read_connections(nodes):
     :return: list of Connections
     """
     trip_ids = ['6512465-CT-17OCT-Combo-Weekday-01', '6512464-CT-17OCT-Combo-Weekday-01', '6512553-CT-17OCT-Combo-Weekday-01']
-    # trip_ids = ['trip1', 'trip2', 'trip3']
+    # trip_ids = ['trip1', 'trip2', 'trip3']  # TODO: For testing
     connections = []
 
     for trip_id in trip_ids:
         stop_times_reader, f = util.create_csv_reader('stop_times.txt')
+        # stop_times_reader, f = util.create_csv_reader('test_stop_times.txt')  # TODO: For testing
         trip_sequence = {}
         for row in stop_times_reader:
             if row['trip_id'] == trip_id:
@@ -56,7 +58,7 @@ def read_connections(nodes):
             end_time = trip_sequence[i+1]['time']
 
             # append
-            connection = Connection(start_node, start_time, end_node, end_time, "caltrain")
+            connection = Connection(start_node.id, start_time, end_node.id, end_time, "caltrain")
             connections.append(connection)
 
     return connections

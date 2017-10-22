@@ -1,7 +1,9 @@
 import csv
+import copy
 from math import sin, cos, sqrt, atan2, radians
 
 BIKE_SPEED_M_PER_MIN = 250.
+ALL_NODES_DB = {}
 
 
 def create_csv_reader(filename):
@@ -69,18 +71,24 @@ def get_close_nodes(node, all_nodes, dist_th=5000):
     return result_nodes
 
 
-def create_bike_connections(from_node, all_nodes):
+def create_bike_connections(from_node):
+    all_nodes = Node.get_all_nodes()
     close_nodes = get_close_nodes(from_node, all_nodes)
 
     bike_connections = []
     for node in close_nodes:
         start_time = from_node.cost
         bike_dist = dist_bw_nodes(from_node, node)
-        end_time = int(start_time + bike_dist / BIKE_SPEED_M_PER_MIN)
-        connection = Connection(from_node, start_time, node, end_time, "bike")
+        end_time = start_time + max(5, int(bike_dist / BIKE_SPEED_M_PER_MIN))
+        connection = Connection(from_node.id, start_time, node.id, end_time, "bike")
         bike_connections.append(connection)
 
     return bike_connections
+
+
+def store_all_nodes_db(all_nodes_db):
+    global ALL_NODES_DB
+    ALL_NODES_DB = all_nodes_db
 
 
 class Node:
@@ -97,7 +105,7 @@ class Node:
 
     def __repr__(self):
         # return "{} ({})".format(self.name, self.id)
-        return "{} ({}) id[{}] mode:[{}]".format(
+        return "{} ({}) [{}] {}".format(
             self.name,
             time_int_to_str(self.cost),
             self.id,
@@ -105,11 +113,18 @@ class Node:
         )
 
     @classmethod
-    def find_node(cls, id, all_nodes):
-        for n in all_nodes:
-            if n.id == id:
-                return n
-        return None
+    def find_node_by_id(cls, id, make_copy=True):
+        if make_copy:
+            return copy.deepcopy(ALL_NODES_DB[id])
+        else:
+            return ALL_NODES_DB[id]
+
+    @classmethod
+    def get_all_nodes(cls, make_copy=True):
+        if make_copy:
+            return copy.deepcopy(ALL_NODES_DB.values())
+        else:
+            return ALL_NODES_DB.values()
 
     @classmethod
     def cheapest_node(cls, nodes):
@@ -124,9 +139,9 @@ class Node:
 
 
 class Connection:
-    def __init__(self, start_node, start_time_str, end_node, end_time_str, mode):
-        self.start_node = start_node
-        self.end_node = end_node
+    def __init__(self, start_node_id, start_time_str, end_node_id, end_time_str, mode):
+        self.start_node_id = start_node_id
+        self.end_node_id = end_node_id
         if isinstance(start_time_str, basestring):
             self.start_time = time_str_to_int(start_time_str)
         else:
@@ -142,7 +157,7 @@ class Connection:
         #     self.start_node, time_int_to_str(self.start_time),
         #     self.end_node, time_int_to_str(self.end_time))
         return "Start: {} \t@{} \t\t\t{}\n End:   {} \t@{}\n".format(
-            self.start_node, time_int_to_str(self.start_time),
+            Node.find_node_by_id(self.start_node_id), time_int_to_str(self.start_time),
             self.mode,
-            self.end_node, time_int_to_str(self.end_time),
+            Node.find_node_by_id(self.end_node_id), time_int_to_str(self.end_time),
         )
