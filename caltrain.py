@@ -30,7 +30,7 @@ def read_connections(nodes):
     Read caltrain trip data and create connections between nodes.
     :return: list of Connections
     """
-    trip_ids = ['6512465-CT-17OCT-Combo-Weekday-01', '6512464-CT-17OCT-Combo-Weekday-01', '6512553-CT-17OCT-Combo-Weekday-01']
+    trip_ids = ['6512465-CT-17OCT-Combo-Weekday-01', '6512464-CT-17OCT-Combo-Weekday-01', '6512555-CT-17OCT-Combo-Weekday-01']
     # trip_ids = ['trip1', 'trip2', 'trip3']  # TODO: For testing
     connections = []
 

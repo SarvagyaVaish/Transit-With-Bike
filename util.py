@@ -99,6 +99,7 @@ class Node:
         self.lat = lat
         self.lon = lon
         self.connections = []
+        self.from_node = None
 
         # for A* search
         self.cost = float("inf")

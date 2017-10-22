@@ -8,6 +8,8 @@ from util import Node, Connection, store_all_nodes_db, dist_bw_nodes
 DEBUG = False
 # DEBUG = True
 
+All_SOLUTIONS = False
+
 
 def get_trips(service_id):
     result_trips = []
@@ -90,13 +92,13 @@ if __name__ == '__main__':
             print "\n-----"
             raw_input()
 
-        # Condense open set
-        new_set = {}
-        for node in open_set:
-            if not node.id in new_set.keys() or new_set[node.id].cost > node.cost:
-                new_set[node.id] = node
-                continue
-        open_set = new_set.values()
+        # # Condense open set: keep only the first lowest cost node for each node id.
+        # new_set = {}
+        # for node in open_set:
+        #     if not node.id in new_set.keys() or new_set[node.id].cost > node.cost:
+        #         new_set[node.id] = node
+        #         continue
+        # open_set = new_set.values()
 
         if DEBUG:
             print "\nOpen set:"
@@ -113,8 +115,18 @@ if __name__ == '__main__':
 
         # Check for goal
         if current_node.id == final_node_id:
-            print "Solution: ", current_node
-            continue
+            print "Solution: "
+
+            solution_node = current_node
+            while solution_node is not None:
+                print solution_node
+                solution_node = solution_node.from_node
+            print "--"
+
+            if All_SOLUTIONS:
+                continue
+            else:
+                break
 
         # Add connections for caltrain
         if "caltrain" in current_node.modes:
@@ -140,15 +152,16 @@ if __name__ == '__main__':
         #     bike_connections = create_bike_connections(current_node)
         #     current_node.connections += bike_connections
 
-        if DEBUG:
-            print "\nNew connections:"
-            pprint.pprint(current_node.connections)
+        # if DEBUG:
+        #     print "\nNew connections:"
+        #     pprint.pprint(current_node.connections)
 
         # Iterate over connections and add nodes
         for connection in current_node.connections:
             new_node_id = connection.end_node_id
             new_node = Node.find_node_by_id(new_node_id)
             new_node.cost = connection.end_time
+            new_node.from_node = current_node
 
             # Add new node to open set
             open_set.append(new_node)
