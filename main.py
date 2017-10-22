@@ -101,8 +101,8 @@ if __name__ == '__main__':
 
     # Models
     caltrain = CaltrainModel()
-    pprint.pprint(caltrain.nodes)
-    pprint.pprint(caltrain.connections)
+    # pprint.pprint(caltrain.nodes)
+    # pprint.pprint(caltrain.connections)
 
     # Create basic nodes
     departure_node = Node(modes=["bike"], id="departure", name="departure", lat=37.425822, lon=-122.100192)
@@ -125,16 +125,24 @@ if __name__ == '__main__':
     closed_set = []
 
     while len(open_set) > 0:
-        print "\n"
+        # print "\n"
         # raw_input()
 
-        print "Open set:"
-        pprint.pprint(open_set)
+        # print "Open set:"
+        # pprint.pprint(open_set)
+
+        # Condense open set
+        new_set = {}
+        for node in open_set:
+            if not node.id in new_set.keys() or new_set[node.id].cost > node.cost:
+                new_set[node.id] = node
+                continue
+        open_set = new_set.values()
 
         # Get next node to explore
         current_node = Node.cheapest_node(open_set)
-        print "Current node:"
-        print current_node
+        # print "Current node:"
+        # print current_node
 
         open_set.remove(current_node)
         closed_set.append(current_node)
@@ -165,8 +173,8 @@ if __name__ == '__main__':
 
         # TODO: Add connections for bike
 
-        print "New connections:"
-        pprint.pprint(current_node.connections)
+        # print "New connections:"
+        # pprint.pprint(current_node.connections)
 
         # Iterate over connections and add nodes
         for connection in current_node.connections:
