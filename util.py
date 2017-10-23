@@ -77,7 +77,7 @@ def create_bike_connections(from_node):
 
     bike_connections = []
     for node in close_nodes:
-        start_time = from_node.cost
+        start_time = from_node.time
         bike_dist = dist_bw_nodes(from_node, node)
         end_time = start_time + max(5, int(bike_dist / BIKE_SPEED_M_PER_MIN))
         connection = Connection(from_node.id, start_time, node.id, end_time, "bike")
@@ -100,17 +100,17 @@ class Node:
         self.lon = lon
         self.connections = []
         self.from_node = None
+        self.time = 0
 
         # for A* search
         self.cost = float("inf")
 
     def __repr__(self):
         # return "{} ({})".format(self.name, self.id)
-        return "{} ({}) [{}] {}".format(
+        return "{} ({}) {}".format(
             self.name,
-            time_int_to_str(self.cost),
-            self.id,
-            self.modes,
+            time_int_to_str(self.time),
+            self.cost,
         )
 
     @classmethod

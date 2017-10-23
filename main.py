@@ -76,15 +76,18 @@ if __name__ == '__main__':
 
     # Set initial node
     # first_node = Node.find_node_by_id("70201")
-    # first_node.cost = 18 * 60 + 9
+    # first_node.time = 18 * 60 + 9
+    # first_node.cost = 0
     # final_node_id = "70011"
 
     first_node = Node.find_node_by_id("departure")
-    first_node.cost = 17 * 60
+    first_node.time = 17 * 60
+    first_node.cost = 0
     final_node_id = "70011"
 
     # first_node = Node.find_node_by_id("A")  # TODO: For testing
-    # first_node.cost = 1 * 60 + 1  # TODO: For testing
+    # first_node.time = 1 * 60 + 1  # TODO: For testing
+    # first_node.cost = 0  # TODO: For testing
     # final_node_id = "C"  # TODO: For testing
 
     open_set = []
@@ -146,7 +149,7 @@ if __name__ == '__main__':
             # Find connections that are still possible
             possible_connections = []
             for connection in relevant_connections:
-                if connection.start_time >= current_node.cost:
+                if connection.start_time >= current_node.time:
                     possible_connections.append(connection)
 
             # Set connections
@@ -157,15 +160,16 @@ if __name__ == '__main__':
             bike_connections = create_bike_connections(current_node)
             current_node.connections += bike_connections
 
-        # if DEBUG:
-        #     print "\nNew connections:"
-        #     pprint.pprint(current_node.connections)
+        if DEBUG:
+            print "\nNew connections:"
+            pprint.pprint(current_node.connections)
 
         # Iterate over connections and add nodes
         for connection in current_node.connections:
             new_node_id = connection.end_node_id
             new_node = Node.find_node_by_id(new_node_id)
-            new_node.cost = connection.end_time
+            new_node.time = connection.end_time
+            new_node.cost = current_node.cost + connection.end_time - current_node.time
             new_node.from_node = current_node
 
             # Add new node to open set
