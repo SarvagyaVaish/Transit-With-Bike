@@ -65,8 +65,8 @@ if __name__ == '__main__':
     caltrain = CaltrainModel()
 
     # Create basic nodes
-    departure_node = Node(modes=["bike"], id="departure", name="Office       ", direction="", lat=37.425822, lon=-122.100192)  # lat=37.414933, lon=-122.103811
-    arrival_node = Node(modes=["bike"], id="arrival", name="Embarc       ", direction="", lat=37.792740, lon=-122.397068)
+    departure_node = Node(modes=["bike"], id="departure", name="Office              ", direction="", lat=37.425822, lon=-122.100192)  # lat=37.414933, lon=-122.103811
+    arrival_node = Node(modes=["bike"], id="arrival", name="Embarc              ", direction="", lat=37.792740, lon=-122.397068)
     setup_DB(caltrain.nodes + [departure_node] + [arrival_node])
     # setup_DB(caltrain.nodes)  # TODO: For testing
 
@@ -211,7 +211,7 @@ if __name__ == '__main__':
             time_waiting = connection.start_time - current_node.arrival_time
             time_moving = connection.end_time - connection.start_time
             bike_penalty = 3.0 if connection.mode == "bike" else 1.0
-            waiting_penalty = 0.0 if current_node.first_dest_node else 0.0
+            waiting_penalty = 0.0 if current_node.first_dest_node else 1.0
             new_node.cost = current_node.cost + time_moving * bike_penalty + time_waiting * waiting_penalty
 
             if DEBUG:
