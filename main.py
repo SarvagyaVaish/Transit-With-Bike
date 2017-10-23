@@ -8,8 +8,7 @@ from util import Node, Connection, store_all_nodes_db, dist_bw_nodes
 DEBUG = False
 # DEBUG = True
 
-All_SOLUTIONS = False
-# All_SOLUTIONS = True
+NUMBER_OF_SOLUTIONS = 5
 
 
 def get_trips(service_id):
@@ -66,8 +65,8 @@ if __name__ == '__main__':
     caltrain = CaltrainModel()
 
     # Create basic nodes
-    departure_node = Node(modes=["bike"], id="departure", name="departure", lat=37.425822, lon=-122.100192)
-    arrival_node = Node(modes=["bike"], id="arrival", name="arrival", lat=37.785399, lon=-122.398752)
+    departure_node = Node(modes=["bike"], id="departure", name="Office       ", direction="", lat=37.425822, lon=-122.100192)  # lat=37.414933, lon=-122.103811
+    arrival_node = Node(modes=["bike"], id="arrival", name="Embarc       ", direction="", lat=37.792740, lon=-122.397068)
     setup_DB(caltrain.nodes + [departure_node] + [arrival_node])
     # setup_DB(caltrain.nodes)  # TODO: For testing
 
@@ -77,17 +76,17 @@ if __name__ == '__main__':
 
     # Set initial node
     # first_node = Node.find_node_by_id("70201")
-    # first_node.time = 18 * 60 + 9
+    # first_node.arrival_time = 18 * 60 + 9
     # first_node.cost = 0
     # final_node_id = "70011"
 
     first_node = Node.find_node_by_id("departure")
-    first_node.time = 17 * 60
+    first_node.arrival_time = 17 * 60 + 0
     first_node.cost = 0
-    final_node_id = "70011"
+    final_node_id = "arrival"
 
     # first_node = Node.find_node_by_id("A")  # TODO: For testing
-    # first_node.time = 1 * 60 + 1  # TODO: For testing
+    # first_node.arrival_time = 1 * 60 + 1  # TODO: For testing
     # first_node.cost = 0  # TODO: For testing
     # final_node_id = "C"  # TODO: For testing
 
@@ -129,11 +128,14 @@ if __name__ == '__main__':
             solution_node = current_node
             while solution_node is not None:
                 print solution_node
-                print "\t", solution_node.from_mode
+                if solution_node.from_mode == "bike":
+                    print "\t", solution_node.from_mode
+                # print "\twaiting:", solution_node.time_waiting, "moving:", solution_node.time_moving, ""
                 solution_node = solution_node.from_node
-            print "--"
+            print "\n\n--\n\n"
 
-            if All_SOLUTIONS:
+            NUMBER_OF_SOLUTIONS -= 1
+            if NUMBER_OF_SOLUTIONS > 0:
                 continue
             else:
                 break
@@ -151,7 +153,7 @@ if __name__ == '__main__':
             # Find connections that are still possible
             possible_connections = []
             for connection in relevant_connections:
-                if connection.start_time >= current_node.time:
+                if connection.start_time >= current_node.arrival_time:
                     possible_connections.append(connection)
 
             # Set connections
@@ -160,24 +162,63 @@ if __name__ == '__main__':
         # Add connections for bikes
         if "bike" in current_node.modes:
             bike_connections = create_bike_connections(current_node)
-            current_node.connections += bike_connections
+
+            # Prune bike connections
+            pruned_connections = []
+            for connection in bike_connections:
+                conn_destination_node = Node.find_node_by_id(connection.end_node_id)
+                conn_departure_node = Node.find_node_by_id(connection.start_node_id)
+
+                # 1. Ignore biking b/w NB and SB stations
+                if conn_departure_node.name == conn_destination_node.name:
+                    continue
+
+                # 2. Don not bike between stations of the same provider
+                if "caltrain" in conn_departure_node.modes and "caltrain" in conn_destination_node.modes:
+                    continue
+
+                # 3. Do not bike back to a visited node
+                keep_connection = True
+                for visited_node in closed_set:
+                    if conn_destination_node.id == visited_node.id:
+                        keep_connection = False
+                        break
+                if not keep_connection:
+                    continue
+
+                pruned_connections.append(connection)
+
+            current_node.connections += pruned_connections
 
         if DEBUG:
             print "\nNew connections:"
-            pprint.pprint(current_node.connections)
 
         # Iterate over connections and add nodes
         for connection in current_node.connections:
+            if DEBUG:
+                print connection
+
             new_node_id = connection.end_node_id
             new_node = Node.find_node_by_id(new_node_id)
-            new_node.time = connection.end_time
+            new_node.arrival_time = connection.end_time
             new_node.from_node = current_node
             new_node.from_mode = connection.mode
 
+            if current_node.id == "departure":  # Mark new node as first "real" node, aka first destination node to.
+                new_node.first_dest_node = True
+
             # Cost
-            duration = connection.end_time - current_node.time
-            bike_penalty = 1.5 if connection.mode == "bike" else 1.0
-            new_node.cost = current_node.cost + duration * bike_penalty
+            time_waiting = connection.start_time - current_node.arrival_time
+            time_moving = connection.end_time - connection.start_time
+            bike_penalty = 3.0 if connection.mode == "bike" else 1.0
+            waiting_penalty = 0.0 if current_node.first_dest_node else 0.0
+            new_node.cost = current_node.cost + time_moving * bike_penalty + time_waiting * waiting_penalty
+
+            if DEBUG:
+                print "time_waiting", time_waiting, "time_moving", time_moving
+
+            new_node.time_waiting = time_waiting
+            new_node.time_moving = time_moving
 
             # Add new node to open set
             open_set.append(new_node)
@@ -185,32 +226,3 @@ if __name__ == '__main__':
         if DEBUG:
             print "\nOpen set:"
             pprint.pprint(open_set)
-
-
-    # Print answer
-    # pprint.pprint(closed_set)
-
-
-
-    # # Get all trips on service
-    # trips = get_trips(service_id)
-    #
-    # # Collect Trip IDs
-    # trip_ids = []
-    # for trip in trips:
-    #     trip_ids.append(trip["trip_id"])
-    #
-    # # Collect stops
-    # stops = get_stops(trip_ids)#(["6512465-CT-17OCT-Combo-Weekday-01"])
-    #
-    # # Add information about stops
-    # for i, stop in enumerate(stops):
-    #     stops[i] = add_stop_info(stop)
-
-    # trip_id = '6512465-CT-17OCT-Combo-Weekday-01'
-    # caltrain_connections = get_connections_for_trip(trip_id, caltrain_nodes)
-    # pprint.pprint(caltrain_connections)
-
-    # for c in caltrain_connections:
-    #     print c.start_node.lat, c.start_node.lon, c.end_node.lat, c.end_node.lon
-    #     dist_bw_nodes(c.start_node, c.end_node)

@@ -14,7 +14,8 @@ def read_nodes():
         node = Node(
             modes=["caltrain", "bike"],
             id=stop_row['stop_id'],
-            name=stop_row['stop_name'].replace(" Caltrain", "") + " " + stop_row['platform_code'],
+            name=stop_row['stop_name'].replace(" Caltrain", ""),
+            direction=stop_row['platform_code'],
             lat=float(stop_row['stop_lat']),
             lon=float(stop_row['stop_lon'])
         )

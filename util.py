@@ -77,7 +77,7 @@ def create_bike_connections(from_node):
 
     bike_connections = []
     for node in close_nodes:
-        start_time = from_node.time
+        start_time = from_node.arrival_time
         bike_dist = dist_bw_nodes(from_node, node)
         end_time = start_time + max(5, int(bike_dist / BIKE_SPEED_M_PER_MIN))
         connection = Connection(from_node.id, start_time, node.id, end_time, "bike")
@@ -92,25 +92,30 @@ def store_all_nodes_db(all_nodes_db):
 
 
 class Node:
-    def __init__(self, modes, id, name, lat=0., lon=0.):
+    def __init__(self, modes, id, name, direction, lat=0., lon=0.):
         self.modes = modes
         self.id = id
         self.name = name
+        self.direction = direction
         self.lat = lat
         self.lon = lon
         self.connections = []
-        self.time = 0
+        self.arrival_time = 0
 
         # for A* search
         self.cost = float("inf")
         self.from_node = None
         self.from_mode = None
+        self.time_waiting = None
+        self.time_moving = None
+        self.first_dest_node = False
 
     def __repr__(self):
         # return "{} ({})".format(self.name, self.id)
-        return "{} ({}) {}".format(
+        return "{} {} ({}) {}".format(
             self.name,
-            time_int_to_str(self.time),
+            self.direction,
+            time_int_to_str(self.arrival_time),
             self.cost,
         )
 
@@ -158,7 +163,7 @@ class Connection:
         # return "{} {} --> {} {}".format(
         #     self.start_node, time_int_to_str(self.start_time),
         #     self.end_node, time_int_to_str(self.end_time))
-        return "Start: {} \t@{} \t\t\t{}\n End:   {} \t@{}\n".format(
+        return "Start: {} \t@{} \t\t\t{}\n  End: {} \t@{}".format(
             Node.find_node_by_id(self.start_node_id), time_int_to_str(self.start_time),
             self.mode,
             Node.find_node_by_id(self.end_node_id), time_int_to_str(self.end_time),
