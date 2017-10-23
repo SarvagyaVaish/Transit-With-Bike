@@ -99,11 +99,12 @@ class Node:
         self.lat = lat
         self.lon = lon
         self.connections = []
-        self.from_node = None
         self.time = 0
 
         # for A* search
         self.cost = float("inf")
+        self.from_node = None
+        self.from_mode = None
 
     def __repr__(self):
         # return "{} ({})".format(self.name, self.id)

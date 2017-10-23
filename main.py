@@ -9,6 +9,7 @@ DEBUG = False
 # DEBUG = True
 
 All_SOLUTIONS = False
+# All_SOLUTIONS = True
 
 
 def get_trips(service_id):
@@ -128,6 +129,7 @@ if __name__ == '__main__':
             solution_node = current_node
             while solution_node is not None:
                 print solution_node
+                print "\t", solution_node.from_mode
                 solution_node = solution_node.from_node
             print "--"
 
@@ -169,8 +171,13 @@ if __name__ == '__main__':
             new_node_id = connection.end_node_id
             new_node = Node.find_node_by_id(new_node_id)
             new_node.time = connection.end_time
-            new_node.cost = current_node.cost + connection.end_time - current_node.time
             new_node.from_node = current_node
+            new_node.from_mode = connection.mode
+
+            # Cost
+            duration = connection.end_time - current_node.time
+            bike_penalty = 1.5 if connection.mode == "bike" else 1.0
+            new_node.cost = current_node.cost + duration * bike_penalty
 
             # Add new node to open set
             open_set.append(new_node)
