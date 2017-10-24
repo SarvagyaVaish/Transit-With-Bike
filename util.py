@@ -112,11 +112,12 @@ class Node:
 
     def __repr__(self):
         # return "{} ({})".format(self.name, self.id)
-        return "{} {} ({}) {}".format(
+        return "{} {} ({}) {} {}".format(
             self.name,
             self.direction,
             time_int_to_str(self.arrival_time),
             self.cost,
+            self.from_mode,
         )
 
     @classmethod

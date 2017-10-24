@@ -94,19 +94,20 @@ if __name__ == '__main__':
     open_set.append(first_node)
 
     closed_set = []
+    solution_number = 0
 
     while len(open_set) > 0:
         if DEBUG:
             print "\n-----"
             raw_input()
 
-        # Condense open set: keep only the first lowest cost node for each node id.
-        new_set = {}
-        for node in open_set:
-            if not node.id in new_set.keys() or new_set[node.id].cost > node.cost:
-                new_set[node.id] = node
-                continue
-        open_set = new_set.values()
+        # # Condense open set: keep only the first lowest cost node for each node id.
+        # new_set = {}
+        # for node in open_set:
+        #     if not node.id in new_set.keys() or new_set[node.id].cost > node.cost:
+        #         new_set[node.id] = node
+        #         continue
+        # open_set = new_set.values()
 
         if DEBUG:
             print "\nOpen set:"
@@ -121,9 +122,14 @@ if __name__ == '__main__':
         open_set.remove(current_node)
         closed_set.append(current_node)
 
+        if DEBUG:
+            print "\nOpen set:"
+            pprint.pprint(open_set)
+
         # Check for goal
         if current_node.id == final_node_id:
-            print "Solution: "
+            solution_number += 1
+            print "\nSolution #:", solution_number
 
             solution_node = current_node
             while solution_node is not None:
@@ -134,8 +140,7 @@ if __name__ == '__main__':
                 solution_node = solution_node.from_node
             print "\n\n--\n\n"
 
-            NUMBER_OF_SOLUTIONS -= 1
-            if NUMBER_OF_SOLUTIONS > 0:
+            if solution_number < NUMBER_OF_SOLUTIONS:
                 continue
             else:
                 break
@@ -173,16 +178,18 @@ if __name__ == '__main__':
                 if conn_departure_node.name == conn_destination_node.name:
                     continue
 
-                # 2. Don not bike between stations of the same provider
+                # 2. Don't not bike between stations of the same provider
                 if "caltrain" in conn_departure_node.modes and "caltrain" in conn_destination_node.modes:
                     continue
 
-                # 3. Do not bike back to a visited node
+                # 3. Do not create loops
                 keep_connection = True
-                for visited_node in closed_set:
-                    if conn_destination_node.id == visited_node.id:
+                prev_node = current_node.from_node
+                while prev_node is not None:
+                    if prev_node.id == conn_destination_node.id:
                         keep_connection = False
                         break
+                    prev_node = prev_node.from_node
                 if not keep_connection:
                     continue
 
@@ -211,11 +218,11 @@ if __name__ == '__main__':
             time_waiting = connection.start_time - current_node.arrival_time
             time_moving = connection.end_time - connection.start_time
             bike_penalty = 3.0 if connection.mode == "bike" else 1.0
-            waiting_penalty = 0.0 if current_node.first_dest_node else 1.0
+            waiting_penalty = 0.001 if current_node.first_dest_node else 2.0
             new_node.cost = current_node.cost + time_moving * bike_penalty + time_waiting * waiting_penalty
 
             if DEBUG:
-                print "time_waiting", time_waiting, "time_moving", time_moving
+                print "time_waiting", time_waiting, "time_moving", time_moving, "cost", new_node.cost
 
             new_node.time_waiting = time_waiting
             new_node.time_moving = time_moving
