@@ -8,19 +8,18 @@ def create_nodes():
     :return: list of Nodes
     """
     nodes = []
-    stops_reader, f = util.create_csv_reader('stops.txt')
-    # stops_reader, f = util.create_csv_reader('test_stops.txt')  # TODO: For testing
-    for stop_row in stops_reader:
-        node = Node(
-            modes=["caltrain", "bike"],
-            id=stop_row['stop_id'],
-            name=stop_row['stop_name'].replace(" Caltrain", ""),
-            direction=stop_row['platform_code'],
-            lat=float(stop_row['stop_lat']),
-            lon=float(stop_row['stop_lon'])
-        )
-        nodes.append(node)
-    f.close()
+    with util.create_csv_reader('stops.txt') as stops_reader:
+        # stops_reader, f = util.create_csv_reader('test_stops.txt')  # TODO: For testing
+        for stop_row in stops_reader:
+            node = Node(
+                modes=["caltrain", "bike"],
+                id=stop_row['stop_id'],
+                name=stop_row['stop_name'].replace(" Caltrain", ""),
+                direction=stop_row['platform_code'],
+                lat=float(stop_row['stop_lat']),
+                lon=float(stop_row['stop_lon'])
+            )
+            nodes.append(node)
 
     return nodes
 
@@ -36,17 +35,16 @@ def create_connections(nodes):
     connections = []
 
     for trip_id in trip_ids:
-        stop_times_reader, f = util.create_csv_reader('stop_times.txt')
-        # stop_times_reader, f = util.create_csv_reader('test_stop_times.txt')  # TODO: For testing
-        trip_sequence = {}
-        for row in stop_times_reader:
-            if row['trip_id'] == trip_id:
-                trip_sequence[int(row['stop_sequence'])] = \
-                    {
-                        'time':    row['arrival_time'],
-                        'stop_id': row['stop_id']
-                    }
-        f.close()
+        with util.create_csv_reader('stop_times.txt') as stop_times_reader:
+            # stop_times_reader, f = util.create_csv_reader('test_stop_times.txt')  # TODO: For testing
+            trip_sequence = {}
+            for row in stop_times_reader:
+                if row['trip_id'] == trip_id:
+                    trip_sequence[int(row['stop_sequence'])] = \
+                        {
+                            'time':    row['arrival_time'],
+                            'stop_id': row['stop_id']
+                        }
 
         number_of_stops = len(trip_sequence.keys())
         for i in range(1, number_of_stops):

@@ -1,15 +1,18 @@
 import csv
 import copy
 from math import sin, cos, sqrt, atan2, radians
+from contextlib import contextmanager
 
 BIKE_SPEED_M_PER_MIN = 250.
 ALL_NODES_DB = {}
 
 
+@contextmanager
 def create_csv_reader(filename):
     file = open(filename, 'r')
     reader = csv.DictReader(file)
-    return reader, file
+    yield reader
+    file.close()
 
 
 def time_str_to_int(time_str):
