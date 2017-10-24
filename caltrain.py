@@ -2,7 +2,7 @@ import util
 from util import Node, Connection
 
 
-def read_nodes():
+def create_nodes():
     """
     Read caltrain stops and create create Node objects.
     :return: list of Nodes
@@ -25,7 +25,7 @@ def read_nodes():
     return nodes
 
 
-def read_connections(nodes):
+def create_connections(nodes):
     # TODO: expand to include all trips.
     """
     Read caltrain trip data and create connections between nodes.
@@ -67,5 +67,5 @@ def read_connections(nodes):
 
 class CaltrainModel:
     def __init__(self):
-        self.nodes = read_nodes()
-        self.connections = read_connections(self.nodes)
+        self.nodes = create_nodes()
+        self.connections = create_connections(self.nodes)

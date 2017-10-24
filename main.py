@@ -11,45 +11,6 @@ DEBUG = False
 NUMBER_OF_SOLUTIONS = 5
 
 
-def get_trips(service_id):
-    result_trips = []
-
-    trips_reader, f = create_csv_reader('trips.txt')
-    for trip in trips_reader:
-        if trip["service_id"] == service_id:
-            result_trips.append(trip)
-    f.close()
-
-    return result_trips
-
-
-def get_stops(trip_ids):
-    result_stops = []
-
-    stop_times_reader, f = create_csv_reader('stop_times.txt')
-    for stop in stop_times_reader:
-        if stop["trip_id"] in trip_ids:
-            result_stops.append(stop)
-    f.close()
-
-    return result_stops
-
-
-def add_stop_info(stop):
-    stops_reader, f = create_csv_reader('stops.txt')
-    for stop_row in stops_reader:
-        if stop_row["stop_id"] == stop["stop_id"]:
-            # Add info
-            stop["stop_name"] = stop_row["stop_name"]
-            stop["stop_lat"] = stop_row["stop_lat"]
-            stop["stop_lon"] = stop_row["stop_lon"]
-            stop["zone_id"] = stop_row["zone_id"]
-            break
-    f.close()
-
-    return stop
-
-
 def setup_DB(all_nodes):
     # Create global lookup
     all_nodes_db = {}
