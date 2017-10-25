@@ -8,7 +8,7 @@ from util import Node, store_all_nodes_db
 DEBUG = False
 # DEBUG = True
 
-NUMBER_OF_SOLUTIONS = 5
+NUMBER_OF_SOLUTIONS = 2
 
 
 def setup_DB(all_nodes):
@@ -84,8 +84,7 @@ if __name__ == '__main__':
             while solution_node is not None:
                 print solution_node
                 if solution_node.from_mode == "bike":
-                    print "\t", solution_node.from_mode
-                # print "\twaiting:", solution_node.time_waiting, "moving:", solution_node.time_moving, ""
+                    print "\t", solution_node.from_mode, "for {} mins".format(solution_node.time_moving)
                 solution_node = solution_node.from_node
 
             if DEBUG:
@@ -171,7 +170,7 @@ if __name__ == '__main__':
             # Cost
             time_waiting = connection.start_time - current_node.arrival_time
             time_moving = connection.end_time - connection.start_time
-            bike_penalty = 1.2 if connection.mode == "bike" else 1.0
+            bike_penalty = 1.0 if connection.mode == "bike" else 1.0
             waiting_penalty = 0.001 if current_node.first_dest_node else 2.0
             new_node.cost = current_node.cost + time_moving * bike_penalty + time_waiting * waiting_penalty
 
