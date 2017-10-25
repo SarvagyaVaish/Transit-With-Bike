@@ -24,46 +24,65 @@ def create_nodes():
     return nodes
 
 
-def create_connections(nodes):
+def create_connections(nodes, trip_id):
     # TODO: expand to include all trips.
     """
     Read caltrain trip data and create connections between nodes.
     :return: list of Connections
     """
-    trip_ids = ['6512465-CT-17OCT-Combo-Weekday-01', '6512464-CT-17OCT-Combo-Weekday-01', '6512555-CT-17OCT-Combo-Weekday-01']
-    # trip_ids = ['trip1', 'trip2', 'trip3']  # TODO: For testing
+
     connections = []
 
-    for trip_id in trip_ids:
-        with util.create_csv_reader('stop_times.txt') as stop_times_reader:
-            # stop_times_reader, f = util.create_csv_reader('test_stop_times.txt')  # TODO: For testing
-            trip_sequence = {}
-            for row in stop_times_reader:
-                if row['trip_id'] == trip_id:
-                    trip_sequence[int(row['stop_sequence'])] = \
-                        {
-                            'time':    row['arrival_time'],
-                            'stop_id': row['stop_id']
-                        }
+    with util.create_csv_reader('stop_times.txt') as stop_times_reader:
+        # stop_times_reader, f = util.create_csv_reader('test_stop_times.txt')  # TODO: For testing
+        trip_sequence = {}
+        for row in stop_times_reader:
+            if row['trip_id'] == trip_id:
+                trip_sequence[int(row['stop_sequence'])] = \
+                    {
+                        'time':    row['arrival_time'],
+                        'stop_id': row['stop_id']
+                    }
 
-        number_of_stops = len(trip_sequence.keys())
-        for i in range(1, number_of_stops):
-            # start node
-            start_node = filter(lambda n: n.id == trip_sequence[i]['stop_id'], nodes)[0]
-            start_time = trip_sequence[i]['time']
+    number_of_stops = len(trip_sequence.keys())
+    for i in range(1, number_of_stops):
+        # start node
+        start_node = filter(lambda n: n.id == trip_sequence[i]['stop_id'], nodes)[0]
+        start_time = trip_sequence[i]['time']
 
-            # end node
-            end_node = filter(lambda n: n.id == trip_sequence[i+1]['stop_id'], nodes)[0]
-            end_time = trip_sequence[i+1]['time']
+        # end node
+        end_node = filter(lambda n: n.id == trip_sequence[i+1]['stop_id'], nodes)[0]
+        end_time = trip_sequence[i+1]['time']
 
-            # append
-            connection = Connection(start_node.id, start_time, end_node.id, end_time, "caltrain")
-            connections.append(connection)
+        # append
+        connection = Connection(start_node.id, start_time, end_node.id, end_time, "caltrain")
+        connections.append(connection)
 
     return connections
+
+
+def get_service_and_trip_information():
+    service_to_trips_dict = {}
+
+    with util.create_csv_reader('trips.txt') as trips_reader:
+        for trip in trips_reader:
+            if trip["service_id"] not in service_to_trips_dict.keys():
+                service_to_trips_dict[trip["service_id"]] = []
+            service_to_trips_dict[trip["service_id"]].append(trip["trip_id"])
+
+    return service_to_trips_dict
 
 
 class CaltrainModel:
     def __init__(self):
         self.nodes = create_nodes()
-        self.connections = create_connections(self.nodes)
+        self.connections = []
+
+        service_dict = get_service_and_trip_information()
+        trip_ids = service_dict['CT-17OCT-Combo-Weekday-01']  # Use weekday schedule
+
+        # trip_ids = ['6512465-CT-17OCT-Combo-Weekday-01', '6512464-CT-17OCT-Combo-Weekday-01']
+        # trip_ids = ['trip1', 'trip2', 'trip3']  # TODO: For testing
+
+        for trip_id in trip_ids:
+            self.connections += create_connections(self.nodes, trip_id)

@@ -36,11 +36,6 @@ if __name__ == '__main__':
     #
 
     # Set initial node
-    # first_node = Node.find_node_by_id("70201")
-    # first_node.arrival_time = 18 * 60 + 9
-    # first_node.cost = 0
-    # final_node_id = "70011"
-
     first_node = Node.find_node_by_id("departure")
     first_node.arrival_time = 17 * 60 + 0
     first_node.cost = 0
