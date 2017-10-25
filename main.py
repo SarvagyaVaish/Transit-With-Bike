@@ -1,9 +1,9 @@
 import pprint
 
 from caltrain import CaltrainModel
-
-from util import create_csv_reader, create_bike_connections
-from util import Node, Connection, store_all_nodes_db, dist_bw_nodes
+from maps_client import maps_client_network_stats
+from util import create_bike_connections
+from util import Node, store_all_nodes_db
 
 DEBUG = False
 # DEBUG = True
@@ -21,6 +21,7 @@ def setup_DB(all_nodes):
 
 if __name__ == '__main__':
     service_id = 'CT-17OCT-Combo-Weekday-01'
+    print "Loading..."
 
     # Models
     caltrain = CaltrainModel()
@@ -55,19 +56,8 @@ if __name__ == '__main__':
     closed_set = []
     solution_number = 0
 
+    print "Calculating...\n-----"
     while len(open_set) > 0:
-        if DEBUG:
-            print "\n-----"
-            raw_input()
-
-        # # Condense open set: keep only the first lowest cost node for each node id.
-        # new_set = {}
-        # for node in open_set:
-        #     if not node.id in new_set.keys() or new_set[node.id].cost > node.cost:
-        #         new_set[node.id] = node
-        #         continue
-        # open_set = new_set.values()
-
         if DEBUG:
             print "\nOpen set:"
             pprint.pprint(open_set)
@@ -97,6 +87,11 @@ if __name__ == '__main__':
                     print "\t", solution_node.from_mode
                 # print "\twaiting:", solution_node.time_waiting, "moving:", solution_node.time_moving, ""
                 solution_node = solution_node.from_node
+
+            if DEBUG:
+                print "\nNetwork stats:"
+                maps_client_network_stats()
+
             print "\n\n--\n\n"
 
             if solution_number < NUMBER_OF_SOLUTIONS:
@@ -192,3 +187,5 @@ if __name__ == '__main__':
         if DEBUG:
             print "\nOpen set:"
             pprint.pprint(open_set)
+            print "\n-----"
+            raw_input()

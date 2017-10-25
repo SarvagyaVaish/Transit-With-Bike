@@ -93,5 +93,5 @@ class CaltrainModel:
             if connection.start_time >= start_time and connection.end_time <= end_time:
                 keep_list.append(connection)
 
-        print "Pruning from {} to {} connections.".format(len(self.connections), len(keep_list))
+        # print "Pruning from {} to {} connections.".format(len(self.connections), len(keep_list))
         self.connections = keep_list

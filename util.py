@@ -2,6 +2,7 @@ import csv
 import copy
 from math import sin, cos, sqrt, atan2, radians
 from contextlib import contextmanager
+from maps_client import get_biking_time
 
 BIKE_SPEED_M_PER_MIN = 250.
 ALL_NODES_DB = {}
@@ -34,7 +35,7 @@ def time_int_to_str(time_int):
     return s
 
 
-def dist_bw_nodes(node1, node2):
+def straight_line_dist_bw_nodes(node1, node2):
     """
     Calculate distance between two nodes.
     :param node1:
@@ -57,6 +58,20 @@ def dist_bw_nodes(node1, node2):
     return distance * 1000
 
 
+def biking_duration_bw_nodes(node1, node2):
+    start_point = "{},{}".format(node1.lat, node1.lon)
+    end_point = "{},{}".format(node2.lat, node2.lon)
+    duration = get_biking_time(start_point, end_point)
+
+    if duration is None:
+        print "WARN: fallback to simple biking duration"
+        # Fallback on rough estimate using avg speed
+        dist = straight_line_dist_bw_nodes(node1, node2)
+        duration = max(5, int(dist / BIKE_SPEED_M_PER_MIN))
+
+    return duration
+
+
 def get_close_nodes(node, all_nodes, dist_th=5000):
     """
     :param node: the node in question
@@ -68,7 +83,7 @@ def get_close_nodes(node, all_nodes, dist_th=5000):
     for n in all_nodes:
         if n.id == node.id:  # ignore self
             continue
-        if dist_bw_nodes(node, n) < dist_th:
+        if straight_line_dist_bw_nodes(node, n) < dist_th:
             result_nodes.append(n)
 
     return result_nodes
@@ -81,8 +96,7 @@ def create_bike_connections(from_node):
     bike_connections = []
     for node in close_nodes:
         start_time = from_node.arrival_time
-        bike_dist = dist_bw_nodes(from_node, node)
-        end_time = start_time + max(5, int(bike_dist / BIKE_SPEED_M_PER_MIN))
+        end_time = start_time + biking_duration_bw_nodes(from_node, node)
         connection = Connection(from_node.id, start_time, node.id, end_time, "bike")
         bike_connections.append(connection)
 
