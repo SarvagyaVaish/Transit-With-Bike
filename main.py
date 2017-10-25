@@ -2,7 +2,7 @@ import pprint
 
 from caltrain import CaltrainModel
 from maps_client import maps_client_network_stats
-from util import create_bike_connections
+from util import create_bike_connections, time_str_to_int
 from util import Node, store_all_nodes_db
 
 DEBUG = False
@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     # Set initial node
     first_node = Node.find_node_by_id("departure")
-    first_node.arrival_time = 17 * 60 + 0
+    first_node.arrival_time = time_str_to_int("17:45:00")
     first_node.cost = 0
     final_node_id = "arrival"
 
