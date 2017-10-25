@@ -86,3 +86,12 @@ class CaltrainModel:
 
         for trip_id in trip_ids:
             self.connections += create_connections(self.nodes, trip_id)
+
+    def keep_connections_bw(self, start_time, end_time):
+        keep_list = []
+        for connection in self.connections:
+            if connection.start_time >= start_time and connection.end_time <= end_time:
+                keep_list.append(connection)
+
+        print "Pruning from {} to {} connections.".format(len(self.connections), len(keep_list))
+        self.connections = keep_list

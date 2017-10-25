@@ -46,6 +46,9 @@ if __name__ == '__main__':
     # first_node.cost = 0  # TODO: For testing
     # final_node_id = "C"  # TODO: For testing
 
+    # Remove connections that are in the past, or too far off in the future
+    caltrain.keep_connections_bw(first_node.arrival_time - 1, first_node.arrival_time + 4 * 60)
+
     open_set = []
     open_set.append(first_node)
 
@@ -173,7 +176,7 @@ if __name__ == '__main__':
             # Cost
             time_waiting = connection.start_time - current_node.arrival_time
             time_moving = connection.end_time - connection.start_time
-            bike_penalty = 3.0 if connection.mode == "bike" else 1.0
+            bike_penalty = 1.2 if connection.mode == "bike" else 1.0
             waiting_penalty = 0.001 if current_node.first_dest_node else 2.0
             new_node.cost = current_node.cost + time_moving * bike_penalty + time_waiting * waiting_penalty
 
