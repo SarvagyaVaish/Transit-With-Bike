@@ -9,7 +9,6 @@ def create_nodes():
     """
     nodes = []
     with util.create_csv_reader('stops.txt') as stops_reader:
-        # stops_reader, f = util.create_csv_reader('test_stops.txt')  # TODO: For testing
         for stop_row in stops_reader:
             node = Node(
                 modes=["caltrain", "bike"],
@@ -34,7 +33,6 @@ def create_connections(nodes, trip_id):
     connections = []
 
     with util.create_csv_reader('stop_times.txt') as stop_times_reader:
-        # stop_times_reader, f = util.create_csv_reader('test_stop_times.txt')  # TODO: For testing
         trip_sequence = {}
         for row in stop_times_reader:
             if row['trip_id'] == trip_id:
@@ -80,9 +78,6 @@ class CaltrainModel:
 
         service_dict = get_service_and_trip_information()
         trip_ids = service_dict['CT-17OCT-Combo-Weekday-01']  # Use weekday schedule
-
-        # trip_ids = ['6512465-CT-17OCT-Combo-Weekday-01', '6512464-CT-17OCT-Combo-Weekday-01']
-        # trip_ids = ['trip1', 'trip2', 'trip3']  # TODO: For testing
 
         for trip_id in trip_ids:
             self.connections += create_connections(self.nodes, trip_id)

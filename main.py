@@ -32,7 +32,6 @@ if __name__ == '__main__':
     departure_node = Node(modes=["bike"], id="departure", name="Office              ", direction="", lat=37.425822, lon=-122.100192)  # lat=37.414933, lon=-122.103811
     arrival_node = Node(modes=["bike"], id="arrival", name="Embarc              ", direction="", lat=37.792740, lon=-122.397068)
     setup_DB(caltrain.nodes + [departure_node] + [arrival_node])
-    # setup_DB(caltrain.nodes)  # TODO: For testing
 
     #
     # Graph search
@@ -43,11 +42,6 @@ if __name__ == '__main__':
     first_node.arrival_time = time_str_to_int("17:45:00")
     first_node.cost = 0
     final_node_id = "arrival"
-
-    # first_node = Node.find_node_by_id("A")  # TODO: For testing
-    # first_node.arrival_time = 1 * 60 + 1  # TODO: For testing
-    # first_node.cost = 0  # TODO: For testing
-    # final_node_id = "C"  # TODO: For testing
 
     # Remove connections that are in the past, or too far off in the future
     caltrain.keep_connections_bw(first_node.arrival_time - 1, first_node.arrival_time + 4 * 60)
