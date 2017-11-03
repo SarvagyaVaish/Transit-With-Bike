@@ -4,6 +4,7 @@ from caltrain import CaltrainModel
 from maps_client import maps_client_network_stats
 from util import create_bike_connections, time_str_to_int
 from util import Node, store_all_nodes_db
+import graph_visualizer as viz
 
 DEBUG = False
 # DEBUG = True
@@ -21,6 +22,7 @@ def setup_DB(all_nodes):
 
 if __name__ == '__main__':
     service_id = 'CT-17OCT-Combo-Weekday-01'
+    viz.init_plot()
     print "Loading..."
 
     # Models
@@ -64,6 +66,8 @@ if __name__ == '__main__':
 
         # Get next node to explore
         current_node = Node.cheapest_node(open_set)
+        viz.plot_node(current_node)
+        viz.show_plot()
         if DEBUG:
             print "\nCurrent node:"
             print current_node
@@ -188,3 +192,5 @@ if __name__ == '__main__':
             pprint.pprint(open_set)
             print "\n-----"
             raw_input()
+
+    viz.keep_open()
