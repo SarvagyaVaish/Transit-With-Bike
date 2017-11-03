@@ -3,12 +3,13 @@ import pprint
 from caltrain import CaltrainModel
 from maps_client import maps_client_network_stats
 from util import create_bike_connections, time_str_to_int
-from util import Node, store_all_nodes_db
+from util import Node, store_all_nodes_db, straight_line_dist_bw_nodes
 import graph_visualizer as viz
 
 DEBUG = False
 # DEBUG = True
-VIZ = True
+VIZ = False
+# VIZ = True
 
 NUMBER_OF_SOLUTIONS = 2
 
@@ -33,13 +34,20 @@ if __name__ == '__main__':
     caltrain = CaltrainModel()
 
     # Create basic nodes
-    departure_node = Node(modes=["bike"], id="departure", name="Office              ", direction="", lat=37.425822, lon=-122.100192)  # lat=37.414933, lon=-122.103811
-    arrival_node = Node(modes=["bike"], id="arrival", name="Embarc              ", direction="", lat=37.792740, lon=-122.397068)
-    setup_DB(caltrain.nodes + [departure_node] + [arrival_node])
+    departure_home_node = Node(modes=["bike"], id="departure", name="Home", direction="", lat=37.883771, lon=-122.302277)
+    arrival_home_node = Node(modes=["bike"], id="arrival", name="Home", direction="", lat=37.883771, lon=-122.302277)
+
+    departure_office_node = Node(modes=["bike"], id="departure", name="Office", direction="", lat=37.425822, lon=-122.100192)
+    arrival_office_node = Node(modes=["bike"], id="arrival", name="Office", direction="", lat=37.425822, lon=-122.100192)
+
+    departure_embarc_node = Node(modes=["bike"], id="departure", name="Embarc", direction="", lat=37.792740, lon=-122.397068)
+    arrival_embarc_node = Node(modes=["bike"], id="arrival", name="Embarc", direction="", lat=37.792740, lon=-122.397068)
+
+    setup_DB(caltrain.nodes + [arrival_office_node] + [departure_embarc_node])
 
     if VIZ:
         viz.set_all_nodes(Node.get_all_nodes())
-        viz.set_HnD_node(departure_node, arrival_node)
+        viz.set_HnD_node(Node.find_node_by_id("departure"), Node.find_node_by_id("arrival"))
 
     #
     # Graph search
@@ -47,12 +55,12 @@ if __name__ == '__main__':
 
     # Set initial node
     first_node = Node.find_node_by_id("departure")
-    first_node.arrival_time = time_str_to_int("17:45:00")
+    first_node.arrival_time = time_str_to_int("08:15:00")
     first_node.cost = 0
     final_node_id = "arrival"
 
     # Remove connections that are in the past, or too far off in the future
-    caltrain.keep_connections_bw(first_node.arrival_time - 1, first_node.arrival_time + 4 * 60)
+    caltrain.keep_connections_bw(first_node.arrival_time - 1, first_node.arrival_time + 3 * 60)
 
     open_set = [first_node]
 
@@ -179,7 +187,8 @@ if __name__ == '__main__':
             time_waiting = connection.start_time - current_node.arrival_time
             time_moving = connection.end_time - connection.start_time
             bike_penalty = 1.0 if connection.mode == "bike" else 1.0
-            waiting_penalty = 0.001 if current_node.first_dest_node else 2.0
+            waiting_penalty = 1.0 if current_node.first_dest_node else 1.0
+            # heuristic_cost = straight_line_dist_bw_nodes(arrival_node, new_node) / 1000  # approx Caltrain speed (m/min)
             new_node.cost = current_node.cost + time_moving * bike_penalty + time_waiting * waiting_penalty
 
             if DEBUG:
@@ -203,5 +212,6 @@ if __name__ == '__main__':
             print "\n-----"
             raw_input()
 
+    print "opened nodes:", len(open_set)
     if VIZ:
         viz.keep_open()

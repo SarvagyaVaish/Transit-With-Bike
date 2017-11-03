@@ -93,6 +93,9 @@ def get_biking_time(start_point, end_point):
             duration = json_data['routes'][0]['legs'][0]['duration']['value'] / 60
     else:
         print "ERROR: response status not OK"
+        print repr(full_url)
+        print json_data
+        print ""
 
     return duration
 

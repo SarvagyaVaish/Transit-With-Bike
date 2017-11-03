@@ -59,26 +59,26 @@ def plot_curr_node():
 
 
 #
-# Home and Destination node
+# Departure and Arrival nodes
 #
-HnD_nodes_handle = None
-HnD_nodes_data = None
-def set_HnD_node(H_node, D_node):
-    global HnD_nodes_handle, HnD_nodes_data
-    HnD_nodes_data = {'x': [], 'y': []}
+DnA_nodes_handle = None
+DnA_nodes_data = None
+def set_HnD_node(D_node, A_node):
+    global DnA_nodes_handle, DnA_nodes_data
+    DnA_nodes_data = {'x': [], 'y': []}
 
-    HnD_nodes_data['x'].append(H_node.lon)
-    HnD_nodes_data['y'].append(H_node.lat)
+    DnA_nodes_data['x'].append(D_node.lon)
+    DnA_nodes_data['y'].append(D_node.lat)
 
-    HnD_nodes_data['x'].append(D_node.lon)
-    HnD_nodes_data['y'].append(D_node.lat)
+    DnA_nodes_data['x'].append(A_node.lon)
+    DnA_nodes_data['y'].append(A_node.lat)
 
 def plot_HnD_nodes():
-    global HnD_nodes_handle, HnD_nodes_data
-    if HnD_nodes_handle is None:
-        HnD_nodes_handle, = plt.plot(0, 0, "b*")
-    HnD_nodes_handle.set_xdata(HnD_nodes_data['x'])
-    HnD_nodes_handle.set_ydata(HnD_nodes_data['y'])
+    global DnA_nodes_handle, DnA_nodes_data
+    if DnA_nodes_handle is None:
+        DnA_nodes_handle, = plt.plot(0, 0, "b*")
+    DnA_nodes_handle.set_xdata(DnA_nodes_data['x'])
+    DnA_nodes_handle.set_ydata(DnA_nodes_data['y'])
 
 
 #
