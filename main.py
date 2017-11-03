@@ -8,6 +8,7 @@ import graph_visualizer as viz
 
 DEBUG = False
 # DEBUG = True
+VIZ = True
 
 NUMBER_OF_SOLUTIONS = 2
 
@@ -22,7 +23,10 @@ def setup_DB(all_nodes):
 
 if __name__ == '__main__':
     service_id = 'CT-17OCT-Combo-Weekday-01'
-    viz.init_plot()
+
+    if VIZ:
+        viz.init_plot()
+
     print "Loading..."
 
     # Models
@@ -32,6 +36,10 @@ if __name__ == '__main__':
     departure_node = Node(modes=["bike"], id="departure", name="Office              ", direction="", lat=37.425822, lon=-122.100192)  # lat=37.414933, lon=-122.103811
     arrival_node = Node(modes=["bike"], id="arrival", name="Embarc              ", direction="", lat=37.792740, lon=-122.397068)
     setup_DB(caltrain.nodes + [departure_node] + [arrival_node])
+
+    if VIZ:
+        viz.set_all_nodes(Node.get_all_nodes())
+        viz.set_HnD_node(departure_node, arrival_node)
 
     #
     # Graph search
@@ -46,8 +54,7 @@ if __name__ == '__main__':
     # Remove connections that are in the past, or too far off in the future
     caltrain.keep_connections_bw(first_node.arrival_time - 1, first_node.arrival_time + 4 * 60)
 
-    open_set = []
-    open_set.append(first_node)
+    open_set = [first_node]
 
     closed_set = []
     solution_number = 0
@@ -60,8 +67,10 @@ if __name__ == '__main__':
 
         # Get next node to explore
         current_node = Node.cheapest_node(open_set)
-        viz.plot_node(current_node)
-        viz.show_plot()
+
+        if VIZ:
+            viz.set_current_node(current_node)
+
         if DEBUG:
             print "\nCurrent node:"
             print current_node
@@ -129,7 +138,7 @@ if __name__ == '__main__':
                 if conn_departure_node.name == conn_destination_node.name:
                     continue
 
-                # 2. Don't not bike between stations of the same provider
+                # 2. Don't bike between stations of the same provider
                 if "caltrain" in conn_departure_node.modes and "caltrain" in conn_destination_node.modes:
                     continue
 
@@ -152,6 +161,7 @@ if __name__ == '__main__':
             print "\nNew connections:"
 
         # Iterate over connections and add nodes
+        new_nodes = []
         for connection in current_node.connections:
             if DEBUG:
                 print connection
@@ -178,8 +188,14 @@ if __name__ == '__main__':
             new_node.time_waiting = time_waiting
             new_node.time_moving = time_moving
 
-            # Add new node to open set
-            open_set.append(new_node)
+            new_nodes.append(new_node)
+
+        # Add new node to open set
+        open_set += new_nodes
+
+        if VIZ:
+            viz.set_nbr_node(open_set)
+            viz.show_plot()
 
         if DEBUG:
             print "\nOpen set:"
@@ -187,4 +203,5 @@ if __name__ == '__main__':
             print "\n-----"
             raw_input()
 
-    viz.keep_open()
+    if VIZ:
+        viz.keep_open()
