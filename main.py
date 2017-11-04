@@ -202,6 +202,24 @@ if __name__ == '__main__':
         # Add new node to open set
         open_set += new_nodes
 
+        # Prune open set for duplicates
+        open_set.sort(key=lambda x: x.cost)
+        unique_open_set = []
+        i = 0
+        prev_node = None
+        for i in range(len(open_set)):
+            curr_node = open_set[i]
+            accept = False
+            if prev_node is None:
+                accept = True
+            elif prev_node.name != curr_node.name or prev_node.arrival_time != curr_node.arrival_time:
+                accept = True
+
+            if accept:
+                unique_open_set.append(curr_node)
+                prev_node = curr_node
+        open_set = unique_open_set
+
         if VIZ:
             viz.set_nbr_node(open_set)
             viz.show_plot()
