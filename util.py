@@ -111,6 +111,10 @@ def store_all_nodes_db(all_nodes_db):
     ALL_NODES_DB = all_nodes_db
 
 
+def heuristic_time_to_destination(dest_node):
+    return lambda node: straight_line_dist_bw_nodes(node, dest_node) / 2200.  # Travel reasonably fast 80 mph
+
+
 class Node:
     def __init__(self, modes, id, name, direction, lat=0., lon=0.):
         self.modes = modes
@@ -155,12 +159,18 @@ class Node:
             return ALL_NODES_DB.values()
 
     @classmethod
-    def cheapest_node(cls, nodes):
+    def cheapest_node(cls, nodes, h_func=None):
         best_cost = float('inf')
         best_node = None
         for node in nodes:
-            if node.cost < best_cost:
-                best_cost = node.cost
+            # Compute and heuristic cost using provided function
+            h_cost = 0
+            if h_func is not None:
+                h_cost = h_func(node)
+
+            # Book keeping to find lowest cost node
+            if node.cost + h_cost < best_cost:
+                best_cost = node.cost + h_cost
                 best_node = node
 
         return best_node

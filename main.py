@@ -3,13 +3,13 @@ import pprint
 from caltrain import CaltrainModel
 from maps_client import maps_client_network_stats
 from util import create_bike_connections, time_str_to_int
-from util import Node, store_all_nodes_db, straight_line_dist_bw_nodes, biking_duration_bw_nodes
+from util import Node, store_all_nodes_db, biking_duration_bw_nodes, heuristic_time_to_destination
 import graph_visualizer as viz
 
 DEBUG = False
 # DEBUG = True
-VIZ = False
-# VIZ = True
+# VIZ = False
+VIZ = True
 
 NUMBER_OF_SOLUTIONS = 2
 
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     departure_embarc_node = Node(modes=["bike"], id="departure", name="Embarc", direction="", lat=37.792740, lon=-122.397068)
     arrival_embarc_node = Node(modes=["bike"], id="arrival", name="Embarc", direction="", lat=37.792740, lon=-122.397068)
 
-    setup_DB(caltrain.nodes + [arrival_office_node] + [departure_embarc_node])
+    setup_DB(caltrain.nodes + [departure_office_node] + [arrival_embarc_node])
 
     if VIZ:
         viz.set_all_nodes(Node.get_all_nodes())
@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     # Set initial node
     first_node = Node.find_node_by_id("departure")
-    first_node.arrival_time = time_str_to_int("08:15:00")
+    first_node.arrival_time = time_str_to_int("17:30:00")
     first_node.cost = 0
     final_node_id = "arrival"
 
@@ -74,7 +74,10 @@ if __name__ == '__main__':
             pprint.pprint(open_set)
 
         # Get next node to explore
-        current_node = Node.cheapest_node(open_set)
+        current_node = Node.cheapest_node(
+            open_set,
+            h_func=heuristic_time_to_destination(Node.find_node_by_id("arrival"))
+        )
 
         if VIZ:
             viz.set_current_node(current_node)
@@ -190,7 +193,6 @@ if __name__ == '__main__':
             time_moving = connection.end_time - connection.start_time
             bike_penalty = 1.0 if connection.mode == "bike" else 1.0
             waiting_penalty = 1.0 if current_node.first_dest_node else 1.0
-            # heuristic_cost = straight_line_dist_bw_nodes(arrival_node, new_node) / 1000  # approx Caltrain speed (m/min)
             new_node.cost = current_node.cost + time_moving * bike_penalty + time_waiting * waiting_penalty
 
             if DEBUG:
