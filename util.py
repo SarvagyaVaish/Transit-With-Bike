@@ -89,14 +89,17 @@ def get_close_nodes(node, all_nodes, dist_th=5000):
     return result_nodes
 
 
-def create_bike_connections(from_node):
+def create_bike_connections(from_node, compute_end_time=True):
     all_nodes = Node.get_all_nodes()
     close_nodes = get_close_nodes(from_node, all_nodes)
 
     bike_connections = []
     for node in close_nodes:
         start_time = from_node.arrival_time
-        end_time = start_time + biking_duration_bw_nodes(from_node, node)
+        if compute_end_time:
+            end_time = start_time + biking_duration_bw_nodes(from_node, node)
+        else:
+            end_time = copy.deepcopy(start_time)
         connection = Connection(from_node.id, start_time, node.id, end_time, "bike")
         bike_connections.append(connection)
 

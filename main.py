@@ -3,7 +3,7 @@ import pprint
 from caltrain import CaltrainModel
 from maps_client import maps_client_network_stats
 from util import create_bike_connections, time_str_to_int
-from util import Node, store_all_nodes_db, straight_line_dist_bw_nodes
+from util import Node, store_all_nodes_db, straight_line_dist_bw_nodes, biking_duration_bw_nodes
 import graph_visualizer as viz
 
 DEBUG = False
@@ -134,7 +134,7 @@ if __name__ == '__main__':
 
         # Add connections for bikes
         if "bike" in current_node.modes:
-            bike_connections = create_bike_connections(current_node)
+            bike_connections = create_bike_connections(current_node, compute_end_time=False)
 
             # Prune bike connections
             pruned_connections = []
@@ -161,6 +161,8 @@ if __name__ == '__main__':
                 if not keep_connection:
                     continue
 
+                # We want to keep this connection. Calculate end_time.
+                connection.end_time = connection.start_time + biking_duration_bw_nodes(conn_departure_node, conn_destination_node)
                 pruned_connections.append(connection)
 
             current_node.connections += pruned_connections

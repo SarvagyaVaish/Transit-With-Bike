@@ -29,9 +29,7 @@ class Memoize:
             global NUMBER_OF_REQUESTS
             NUMBER_OF_REQUESTS += 1
             self.memo[key_str] = self.f(start_str, end_str)
-
-            if NUMBER_OF_REQUESTS % 10 == 0:
-                self.save_memo(self.memo)
+            self.save_memo(self.memo)
         else:
             global NUMBER_OF_CACHES
             NUMBER_OF_CACHES += 1
