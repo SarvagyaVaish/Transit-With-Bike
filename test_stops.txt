@@ -1,4 +1,0 @@
-stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,location_type,parent_station,platform_code,wheelchair_boarding
-A,A,A,,37,-122.01,1,,0,,,1
-B,B,B,,37,-122.04,1,,0,,,1
-C,C,C,,37,-122.07,1,,0,,,1

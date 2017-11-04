@@ -72,7 +72,7 @@ def biking_duration_bw_nodes(node1, node2):
     return duration
 
 
-def get_close_nodes(node, all_nodes, dist_th=5000):
+def get_close_nodes(node, all_nodes, dist_th=8000):
     """
     :param node: the node in question
     :param all_nodes: list of all nodes to check against
@@ -101,6 +101,10 @@ def create_bike_connections(from_node, compute_end_time=True):
         else:
             end_time = copy.deepcopy(start_time)
         connection = Connection(from_node.id, start_time, node.id, end_time, "bike")
+
+        # if node.direction == "SB":  # Hack for debugging
+        #     continue
+
         bike_connections.append(connection)
 
     return bike_connections

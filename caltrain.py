@@ -8,7 +8,7 @@ def create_nodes():
     :return: list of Nodes
     """
     nodes = []
-    with util.create_csv_reader('stops.txt') as stops_reader:
+    with util.create_csv_reader('data_caltrain/stops.txt') as stops_reader:
         for stop_row in stops_reader:
             node = Node(
                 modes=["caltrain", "bike"],
@@ -32,7 +32,7 @@ def create_connections(nodes, trip_id):
 
     connections = []
 
-    with util.create_csv_reader('stop_times.txt') as stop_times_reader:
+    with util.create_csv_reader('data_caltrain/stop_times.txt') as stop_times_reader:
         trip_sequence = {}
         for row in stop_times_reader:
             if row['trip_id'] == trip_id:
@@ -62,7 +62,7 @@ def create_connections(nodes, trip_id):
 def get_service_and_trip_information():
     service_to_trips_dict = {}
 
-    with util.create_csv_reader('trips.txt') as trips_reader:
+    with util.create_csv_reader('data_caltrain/trips.txt') as trips_reader:
         for trip in trips_reader:
             if trip["service_id"] not in service_to_trips_dict.keys():
                 service_to_trips_dict[trip["service_id"]] = []
