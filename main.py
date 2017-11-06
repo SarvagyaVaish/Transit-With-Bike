@@ -3,49 +3,43 @@ import pprint
 from caltrain import CaltrainModel
 from maps_client import maps_client_network_stats
 from util import create_bike_connections, time_str_to_int
-from util import Node, store_all_nodes_db, biking_duration_bw_nodes, heuristic_time_to_destination
+from util import Node, setup_DB, biking_duration_bw_nodes, heuristic_time_to_destination
 import graph_visualizer as viz
 
 DEBUG = False
 # DEBUG = True
-# VIZ = False
-VIZ = True
+VIZ = False
+# VIZ = True
 
-NUMBER_OF_SOLUTIONS = 2
-
-
-def setup_DB(all_nodes):
-    # Create global lookup
-    all_nodes_db = {}
-    for n in all_nodes:
-        all_nodes_db[n.id] = n
-    store_all_nodes_db(all_nodes_db)
+NUMBER_OF_SOLUTIONS = 4
 
 
-if __name__ == '__main__':
-    service_id = 'CT-17OCT-Combo-Weekday-01'
+def find_directions(departure_coordinate, arrival_coordinate, departure_time):
+    """
+    :param departure_coordinate:  tuple of (lat, long)
+    :param arrival_coordinate: tuple of (lat, long)
+    :param departure_time: Departure time string
+    :return: Json with directions
+    """
 
-    if VIZ:
-        viz.init_plot()
-
-    print "Loading..."
-
-    # Models
+    # Load transit models
     caltrain = CaltrainModel()
 
     # Create basic nodes
-    departure_home_node = Node(modes=["bike"], id="departure", name="Home", direction="", lat=37.883771, lon=-122.302277)
-    arrival_home_node = Node(modes=["bike"], id="arrival", name="Home", direction="", lat=37.883771, lon=-122.302277)
+    departure_node = Node(modes=["bike"], id="departure", name="Departure", direction="",
+                          lat=departure_coordinate[0],
+                          lon=departure_coordinate[1]
+                          )
 
-    departure_office_node = Node(modes=["bike"], id="departure", name="Office", direction="", lat=37.425822, lon=-122.100192)
-    arrival_office_node = Node(modes=["bike"], id="arrival", name="Office", direction="", lat=37.425822, lon=-122.100192)
+    arrival_node = Node(modes=["bike"], id="arrival", name="Arrival", direction="",
+                        lat=arrival_coordinate[0],
+                        lon=arrival_coordinate[1]
+                        )
 
-    departure_embarc_node = Node(modes=["bike"], id="departure", name="Embarc", direction="", lat=37.792740, lon=-122.397068)
-    arrival_embarc_node = Node(modes=["bike"], id="arrival", name="Embarc", direction="", lat=37.792740, lon=-122.397068)
-
-    setup_DB(caltrain.nodes + [departure_office_node] + [arrival_embarc_node])
+    setup_DB(caltrain.nodes + [departure_node] + [arrival_node])
 
     if VIZ:
+        viz.init_plot()
         viz.set_all_nodes(Node.get_all_nodes())
         viz.set_HnD_node(Node.find_node_by_id("departure"), Node.find_node_by_id("arrival"))
 
@@ -55,7 +49,7 @@ if __name__ == '__main__':
 
     # Set initial node
     first_node = Node.find_node_by_id("departure")
-    first_node.arrival_time = time_str_to_int("17:30:00")
+    first_node.arrival_time = time_str_to_int(departure_time)
     first_node.cost = 0
     final_node_id = "arrival"
 
@@ -67,7 +61,6 @@ if __name__ == '__main__':
     closed_set = []
     solution_number = 0
 
-    print "Calculating...\n-----"
     while len(open_set) > 0:
         if DEBUG:
             print "\nOpen set:"

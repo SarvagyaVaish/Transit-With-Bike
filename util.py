@@ -110,6 +110,14 @@ def create_bike_connections(from_node, compute_end_time=True):
     return bike_connections
 
 
+def setup_DB(all_nodes):
+    # Create global lookup
+    all_nodes_db = {}
+    for n in all_nodes:
+        all_nodes_db[n.id] = n
+    store_all_nodes_db(all_nodes_db)
+
+
 def store_all_nodes_db(all_nodes_db):
     global ALL_NODES_DB
     ALL_NODES_DB = all_nodes_db
