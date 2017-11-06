@@ -142,8 +142,8 @@ class Node:
         self.cost = float("inf")
         self.from_node = None
         self.from_mode = None
-        self.time_waiting = None
-        self.time_moving = None
+        self.time_waiting = 0
+        self.time_moving = 0
         self.first_dest_node = False
 
     def __repr__(self):

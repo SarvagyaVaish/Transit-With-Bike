@@ -2,7 +2,7 @@ import pprint
 
 from caltrain import CaltrainModel
 from maps_client import maps_client_network_stats
-from util import create_bike_connections, time_str_to_int
+from util import create_bike_connections, time_str_to_int, time_int_to_str
 from util import Node, setup_DB, biking_duration_bw_nodes, heuristic_time_to_destination
 import graph_visualizer as viz
 
@@ -92,8 +92,17 @@ def find_directions(departure_coordinate, arrival_coordinate, departure_time):
             print "\nSolution #:", solution_number
 
             solution_node = current_node
+            wait_at_previous_node = 0
             while solution_node is not None:
-                print solution_node
+                wait_at_current_node = wait_at_previous_node
+                wait_at_previous_node = solution_node.time_waiting
+                print "{} {} : {} {}".format(
+                    solution_node.name,
+                    time_int_to_str(solution_node.arrival_time),
+                    time_int_to_str(solution_node.arrival_time + wait_at_current_node),
+                    solution_node.from_mode
+                )
+                # print solution_node
                 if solution_node.from_mode == "bike":
                     print "\t", solution_node.from_mode, "for {} mins".format(solution_node.time_moving)
                 solution_node = solution_node.from_node
@@ -169,9 +178,6 @@ def find_directions(departure_coordinate, arrival_coordinate, departure_time):
         # Iterate over connections and add nodes
         new_nodes = []
         for connection in current_node.connections:
-            if DEBUG:
-                print connection
-
             new_node_id = connection.end_node_id
             new_node = Node.find_node_by_id(new_node_id)
             new_node.arrival_time = connection.end_time
@@ -189,6 +195,7 @@ def find_directions(departure_coordinate, arrival_coordinate, departure_time):
             new_node.cost = current_node.cost + time_moving * bike_penalty + time_waiting * waiting_penalty
 
             if DEBUG:
+                print connection
                 print "time_waiting", time_waiting, "time_moving", time_moving, "cost", new_node.cost
 
             new_node.time_waiting = time_waiting
