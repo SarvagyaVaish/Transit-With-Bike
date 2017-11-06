@@ -14,7 +14,7 @@ VIZ = False
 NUMBER_OF_SOLUTIONS = 4
 
 
-def find_directions(departure_coordinate, arrival_coordinate, departure_time):
+def find_routes(departure_coordinate, arrival_coordinate, departure_time):
     """
     :param departure_coordinate:  tuple of (lat, long)
     :param arrival_coordinate: tuple of (lat, long)
