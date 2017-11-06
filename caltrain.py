@@ -82,7 +82,7 @@ class CaltrainModel:
         for trip_id in trip_ids:
             self.connections += create_connections(self.nodes, trip_id)
 
-        print "[Caltrain] Node: {}, Connections: {}".format(len(self.nodes), len(self.connections))
+        # print "[Caltrain] Node: {}, Connections: {}".format(len(self.nodes), len(self.connections))
 
     def keep_connections_bw(self, start_time, end_time):
         keep_list = []

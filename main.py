@@ -60,6 +60,7 @@ def find_directions(departure_coordinate, arrival_coordinate, departure_time):
 
     closed_set = []
     solution_number = 0
+    solutions = {}
 
     while len(open_set) > 0:
         if DEBUG:
@@ -89,29 +90,30 @@ def find_directions(departure_coordinate, arrival_coordinate, departure_time):
         # Check for goal
         if current_node.id == final_node_id:
             solution_number += 1
-            print "\nSolution #:", solution_number
+            solution_str = "Solution #: {}\n".format(solution_number)
 
             solution_node = current_node
             wait_at_previous_node = 0
             while solution_node is not None:
                 wait_at_current_node = wait_at_previous_node
                 wait_at_previous_node = solution_node.time_waiting
-                print "{} {} : {} {}".format(
+                solution_str += "{} {} : {} {}\n".format(
                     solution_node.name,
                     time_int_to_str(solution_node.arrival_time),
                     time_int_to_str(solution_node.arrival_time + wait_at_current_node),
                     solution_node.from_mode
                 )
-                # print solution_node
+
                 if solution_node.from_mode == "bike":
-                    print "\t", solution_node.from_mode, "for {} mins".format(solution_node.time_moving)
+                    solution_str += "\t{} for {} mins\n".format(solution_node.from_mode, solution_node.time_moving)
+
                 solution_node = solution_node.from_node
 
-            if DEBUG:
-                print "\nNetwork stats:"
-                maps_client_network_stats()
+            solutions[solution_number] = solution_str
 
-            print "\n\n--\n\n"
+            if DEBUG:
+                print "\n\n--\n\n"
+                print solution_str
 
             if solution_number < NUMBER_OF_SOLUTIONS:
                 continue
@@ -234,6 +236,10 @@ def find_directions(departure_coordinate, arrival_coordinate, departure_time):
             print "\n-----"
             raw_input()
 
-    print "opened nodes:", len(open_set)
+    if DEBUG:
+        print "opened nodes:", len(open_set)
+
     if VIZ:
         viz.keep_open()
+
+    return solutions
